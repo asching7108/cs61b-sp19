@@ -10,3 +10,9 @@ public class HorribleSteve {
         System.out.println("i is " + i);
     }
 }
+
+/* Find the bug:
+ * the isSameNumber method in Flik uses parameters by reference,
+ * thus causes an error when the addresses of arguments are different.
+ * Simply change the parameters type from Integer to int.
+ */
