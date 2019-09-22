@@ -1,3 +1,9 @@
+/** NBody Simulation
+  * This is the body class that stores the info of a body,
+  * and that does the calculations under Newtonian physics.
+  * author: Hsingyi Lin
+  * date:   09/20/2019
+  */
 
 public class Body {
 	public static final double G = 6.67e-11;

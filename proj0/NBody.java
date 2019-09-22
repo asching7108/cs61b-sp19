@@ -1,3 +1,9 @@
+/** NBody Simulation
+  * This program is a simple Newtonian physics simulation.
+  * author: Hsingyi Lin
+  * date:   09/20/2019
+  */
+
 import java.util.Scanner;
 
 public class NBody {
