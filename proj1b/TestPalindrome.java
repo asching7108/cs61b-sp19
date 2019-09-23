@@ -1,3 +1,8 @@
+/** Test Palindrome
+ * author: Hsingyi Lin
+ * date:   09/23/2019
+ */
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 

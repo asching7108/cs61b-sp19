@@ -1,3 +1,8 @@
+/** Palindrome
+  * author: Hsingyi Lin
+  * date:   09/23/2019
+  */
+
 public class Palindrome {
     /** Return a Deque where the characters appear
       * in the same order as in the given String.

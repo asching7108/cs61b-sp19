@@ -1,3 +1,8 @@
+/** Off By N Character Comparator
+ * author: Hsingyi Lin
+ * date:   09/23/2019
+ */
+
 public class OffByN implements CharacterComparator {
     private int N;
     public OffByN(int n) {
