@@ -1,5 +1,5 @@
 /** Linked List Deque for Generic Types
-  * arthur: Hsingyi Lin
+  * author: Hsingyi Lin
   * date: 09/21/2019
   */
 
