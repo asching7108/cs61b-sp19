@@ -4,6 +4,7 @@ import huglife.Creature;
 import huglife.Direction;
 import huglife.Action;
 import huglife.Occupant;
+import huglife.HugLifeUtils;
 
 import java.awt.Color;
 import java.util.ArrayDeque;
@@ -16,6 +17,13 @@ import java.util.Map;
  * @author Josh Hug
  */
 public class Plip extends Creature {
+    /**
+     * constants
+     */
+    private static final double MOVE_LOSS = 0.15;
+    private static final double STAY_GAIN = 0.2;
+    private static final double MAX_ENERGY = 2;
+    private static final double MIN_ENERGY = 0;
 
     /**
      * red color.
@@ -29,6 +37,10 @@ public class Plip extends Creature {
      * blue color.
      */
     private int b;
+    /**
+     * probability of taking a move when ample space available.
+     */
+    private double moveProbability = 0.5;
 
     /**
      * creates plip with energy equal to E.
@@ -57,8 +69,8 @@ public class Plip extends Creature {
      * that you get this exactly correct.
      */
     public Color color() {
-        g = 63;
-        return color(r, g, b);
+        g = (int) (96 * energy + 63);
+        return color(99, g, 76);
     }
 
     /**
@@ -74,7 +86,7 @@ public class Plip extends Creature {
      * private static final variable. This is not required for this lab.
      */
     public void move() {
-        // TODO
+        energy = Math.max(MIN_ENERGY, energy - MOVE_LOSS);
     }
 
 
@@ -82,7 +94,7 @@ public class Plip extends Creature {
      * Plips gain 0.2 energy when staying due to photosynthesis.
      */
     public void stay() {
-        // TODO
+        energy = Math.min(MAX_ENERGY, energy + STAY_GAIN);
     }
 
     /**
@@ -91,7 +103,9 @@ public class Plip extends Creature {
      * Plip.
      */
     public Plip replicate() {
-        return this;
+        Plip offspring = new Plip(energy / 2);
+        energy /= 2;
+        return offspring;
     }
 
     /**
@@ -108,23 +122,35 @@ public class Plip extends Creature {
      * for an example to follow.
      */
     public Action chooseAction(Map<Direction, Occupant> neighbors) {
-        // Rule 1
         Deque<Direction> emptyNeighbors = new ArrayDeque<>();
         boolean anyClorus = false;
-        // TODO
-        // (Google: Enhanced for-loop over keys of NEIGHBORS?)
-        // for () {...}
+        for (Direction drct : neighbors.keySet()) {
+            if (neighbors.get(drct).name() == "empty") {
+                emptyNeighbors.add(drct);
+            } else if (neighbors.get(drct).name() == "clorus") {
+                anyClorus = true;
+            }
+        }
 
-        if (false) { // FIXME
-            // TODO
+        // Rule 1
+        if (emptyNeighbors.isEmpty()) {
+            return new Action(Action.ActionType.STAY);
         }
 
         // Rule 2
-        // HINT: randomEntry(emptyNeighbors)
+        if (energy >= 1.0) {
+            return new Action(Action.ActionType.REPLICATE,
+                    HugLifeUtils.randomEntry(emptyNeighbors));
+        }
 
         // Rule 3
+        if (anyClorus && Math.random() < moveProbability) {
+            return new Action(Action.ActionType.MOVE,
+                    HugLifeUtils.randomEntry(emptyNeighbors));
+        }
 
         // Rule 4
         return new Action(Action.ActionType.STAY);
     }
+
 }

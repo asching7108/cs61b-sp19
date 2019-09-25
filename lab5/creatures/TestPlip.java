@@ -1,16 +1,13 @@
 package creatures;
+import huglife.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import java.util.HashMap;
 import java.awt.Color;
-import huglife.Direction;
-import huglife.Action;
-import huglife.Occupant;
-import huglife.Impassible;
-import huglife.Empty;
 
 /** Tests the plip class
- *  @authr FIXME
+ *  @author Hsingyi Lin
+ *  date    09/24/2019
  */
 
 public class TestPlip {
@@ -32,10 +29,14 @@ public class TestPlip {
 
     @Test
     public void testReplicate() {
-        // TODO
+        Plip p1 = new Plip(3);
+        Plip p2 = p1.replicate();
+        assertNotEquals(p1, p2);
+        assertEquals(1.5, p1.energy(), 0.01);
+        assertEquals(1.5, p2.energy(), 0.01);
     }
 
-    //@Test
+    @Test
     public void testChoose() {
 
         // No empty adjacent spaces; stay.
@@ -56,7 +57,7 @@ public class TestPlip {
         p = new Plip(1.2);
         HashMap<Direction, Occupant> topEmpty = new HashMap<Direction, Occupant>();
         topEmpty.put(Direction.TOP, new Empty());
-        topEmpty.put(Direction.BOTTOM, new Impassible());
+        topEmpty.put(Direction.BOTTOM, new Clorus());
         topEmpty.put(Direction.LEFT, new Impassible());
         topEmpty.put(Direction.RIGHT, new Impassible());
 
@@ -98,6 +99,23 @@ public class TestPlip {
         assertEquals(expected, actual);
 
 
-        // We don't have Cloruses yet, so we can't test behavior for when they are nearby right now.
+        // Energy < 1 and any Cloruses, MOVE towards an empty
+        // direction chosen at random. (Expected half passes and half fails)
+        int actualPercentage = 0;
+        for (int i = 0; i < 100; i++) {
+            p = new Plip(0.99);
+            HashMap<Direction, Occupant> ClorusAround = new HashMap<Direction, Occupant>();
+            ClorusAround.put(Direction.TOP, new Clorus());
+            ClorusAround.put(Direction.BOTTOM, new Clorus());
+            ClorusAround.put(Direction.LEFT, new Clorus());
+            ClorusAround.put(Direction.RIGHT, new Empty());
+
+            actual = p.chooseAction(ClorusAround);
+            expected = new Action(Action.ActionType.MOVE, Direction.RIGHT);
+            if (expected.equals(actual)) {
+                actualPercentage++;
+            }
+        }
+            assertEquals(50, actualPercentage, 10);
     }
 }
