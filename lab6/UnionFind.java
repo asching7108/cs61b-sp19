@@ -1,6 +1,6 @@
-/** Union Find (Disjoint Sets)
- *  This program uses Weighted Quick Union (WQU) with / without
- *  path compression implementation.
+/**             Union Find (Disjoint Sets)
+ * This program uses Weighted Quick Union (WQU) with / without
+ * path compression implementation.
  * @Author Hsingyi Lin
  * date    09/26/2019
  */
