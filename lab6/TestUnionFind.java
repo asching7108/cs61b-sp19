@@ -1,6 +1,11 @@
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+/**
+ * @Author Hsingyi Lin
+ * date    09/26/2019
+ */
+
 public class TestUnionFind {
     @Test
     public void testUnionFind() {
