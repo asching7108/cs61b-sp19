@@ -238,12 +238,26 @@ public class BST<Key extends Comparable<Key>> {
         else              return true;
     }
 
-
+    /*                 added by Hsingyi Lin 09/29/2019                  */
     /**
      * Returns true if this BST is empty.
      * @return {@code true} if this BST is empty; {@code false} otherwise
      */
-    private boolean isEmpty() {
-        return size() == 0;
+    private boolean isEmpty() { return size() == 0; }
+
+    /**
+     * Return the average depth.
+     */
+    public double avgDepth() {
+        int IPL = IPLHelper(root.left) + IPLHelper(root.right);
+        return IPL / (double) size();
     }
+
+    private int IPLHelper(Node x) {
+        if (x == null) {
+            return 0;
+        }
+        return x.size + IPLHelper(x.left) + IPLHelper(x.right);
+    }
+
 }

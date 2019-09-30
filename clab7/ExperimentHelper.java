@@ -1,5 +1,9 @@
+import java.util.Random;
+
 /**
  * Created by hug.
+ * @author Hsingyi Lin (filled the methods)
+ * date    09/29/2019
  */
 public class ExperimentHelper {
 
@@ -15,7 +19,11 @@ public class ExperimentHelper {
      *  N = 8, OIPL: 13
      */
     public static int optimalIPL(int N) {
-        return 0;
+        int IPL = 0;
+        for (int i = 1; i <= N; i++) {
+            IPL += (int) (Math.log(i) / Math.log(2));
+        }
+        return IPL;
     }
 
     /** Returns the average depth for nodes in an optimal BST of
@@ -27,6 +35,26 @@ public class ExperimentHelper {
      * @return
      */
     public static double optimalAverageDepth(int N) {
-        return 0;
+        return optimalIPL(N) / (double) N;
     }
+
+    /**
+     * Inserts a random key into the BST.
+     */
+    public static BST addRandomKey(BST bst,int range) {
+        Random seed = new Random();
+        int key;
+        do {
+            key = seed.nextInt(range);
+        } while (bst.contains(key));
+        bst.add(key);
+        return bst;
+    }
+
+    /* test
+    public static void main (String arg[]) {
+        System.out.println(optimalIPL(8));
+        System.out.println(optimalAverageDepth(8));
+    } */
+
 }
