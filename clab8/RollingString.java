@@ -1,9 +1,18 @@
+import java.util.LinkedList;
+
 /**
  * A String-like class that allows users to add and remove characters in the String
  * in constant time and have a constant-time hash function. Used for the Rabin-Karp
  * string-matching algorithm.
+ * @author Hsingyi Lin
+ * date    10/02/2019
  */
+
 class RollingString{
+
+    private LinkedList<Character> string;
+    private int lastHashCode;
+    private int lastRemoved;
 
     /**
      * Number of total possible int values a character can take on.
@@ -23,7 +32,12 @@ class RollingString{
      */
     public RollingString(String s, int length) {
         assert(s.length() == length);
-        /* FIX ME */
+        string = new LinkedList<>();
+        for (int i = 0; i < s.length(); i++) {
+            string.add(s.charAt(i));
+        }
+        lastRemoved = -1;
+        lastHashCode = -1;
     }
 
     /**
@@ -32,7 +46,9 @@ class RollingString{
      * Should be a constant-time operation.
      */
     public void addChar(char c) {
-        /* FIX ME */
+        lastHashCode = hashCode();
+        lastRemoved = string.remove();
+        string.add(c);
     }
 
 
@@ -43,8 +59,10 @@ class RollingString{
      */
     public String toString() {
         StringBuilder strb = new StringBuilder();
-        /* FIX ME */
-        return "";
+        for (Character c : string) {
+            strb.append(c);
+        }
+        return strb.toString();
     }
 
     /**
@@ -52,8 +70,7 @@ class RollingString{
      * Should be a constant-time operation.
      */
     public int length() {
-        /* FIX ME */
-        return -1;
+        return string.size();
     }
 
 
@@ -64,8 +81,22 @@ class RollingString{
      */
     @Override
     public boolean equals(Object o) {
-        /* FIX ME */
-        return false;
+        if (this == o) {
+            return true;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        RollingString other = (RollingString) o;
+        if (length() != other.length()) {
+            return false;
+        }
+        for (int i = 0; i < string.size(); i++) {
+            if (!string.get(i).equals(other.string.get(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -74,7 +105,17 @@ class RollingString{
      */
     @Override
     public int hashCode() {
-        /* FIX ME */
-        return -1;
+        if (lastHashCode == -1) {
+            int h = 0;
+            for (Character c : string) {
+                h *= UNIQUECHARS;
+                h += (int) c;
+            }
+            h %= PRIMEBASE;
+            return h;
+        }
+        int old = lastRemoved * (int) Math.pow(UNIQUECHARS, (string.size() - 1)) % PRIMEBASE;
+        int temp = ((lastHashCode + PRIMEBASE - old) * UNIQUECHARS) + (int) string.peekLast();
+        return temp % PRIMEBASE;
     }
 }
