@@ -2,6 +2,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
+/**
+ * Method isSeparable() related methods filled by Hsingyi Lin 10/04/2019.
+ * source: https://github.com/junhaowww/cs61b-sp18/blob/master/clab9/SeparableEnemySolver.java
+ * Interpreted and rewritten without copying the source code.
+ */
+
 public class SeparableEnemySolver {
 
     Graph g;
@@ -20,13 +26,155 @@ public class SeparableEnemySolver {
     }
 
     /**
-     * Returns true if input is separable, false otherwise.
+     * Returns true if input is separable into two groups, false otherwise.
+     * Pseudocode:
+     * --
+     * Initialize an empty map M for vertices and their associated group
+     * For each vertices v:
+     *     If v is not in M (not visited)
+     *         If dfs(v, A) returns false (A is an arbitrary group)
+     *             Return false (not separable)
+     * Return true (separable)
+     * --
+     * For all vertices v (that have not been visited, i.e. are not connected to
+     * any previously vertices, thus can be considered independently) , Recursively
+     * goes depth-first through all vertices connected to v, putting direct enemies
+     * into two separate groups, then detect if there's already enemies in the group
+     * in which we're putting the current vertex, if so then the answer is not separable.
+     * If we successfully go through all vertices, the answer is separable.
+     *
      */
     public boolean isSeparable() {
-        // TODO: Fix me
-        return false;
+        HashMap<String, String> groups = new HashMap<>();  // key: vertices, value: group
+        for (String v : g.labels()) {
+            if (!groups.containsKey(v)) {
+                String groupName = "A";
+                boolean res = dfs(v, groupName, groups);
+                if (res == false) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
+    /**
+     * Returns true if input is separable into three groups, false otherwise.
+     * Pseudocode:
+     * --
+     * Initialize an empty map M for vertices and their associated group
+     * For each vertices v:
+     *     If v is not in M (not visited)
+     *         If bfs(v, A) returns false (A is an arbitrary group)
+     *             Return false (not separable)
+     * Return true (separable)
+     * --
+     * Goes breadth-first through all vertices connected to v.
+     */
+    public boolean isSeparableThree() {
+        HashMap<String, String> groups = new HashMap<>();  // key: vertices, value: group
+        for (String v : g.labels()) {
+            if (!groups.containsKey(v)) {
+                String groupName = "A";
+                boolean res = bfsThree(v, groupName, groups);
+                if (res == false) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Pseudocode:
+     * --
+     * Add (v, A) to M
+     * For each neighbor n of v
+     *     If n is not in M (not visited)
+     *         If dfs(n, B) returns false (B is the other arbitrary group)
+     *             Return false (not separable)
+     *     Else (visited)
+     *         If M.get(v) equals M.get(n) (v and its neighbor n are in the same group)
+     *             Return false (not separable)
+     * Return true (separable)
+     *--
+     */
+    private boolean dfs(String v, String group, HashMap<String, String> groups) {
+        groups.put(v, group);
+        for (String n : g.neighbors(v)) {
+            if (!groups.containsKey(n)) {
+                boolean res = dfs(n, group.equals("A") ? "B" : "A", groups);
+                if (res == false) {
+                    return false;
+                }
+            }
+            else {
+                if (groups.get(n).equals(group)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Pseudocode:
+     * --
+     * Initiate an empty List Q of vertices
+     * Add (v, A) to M
+     * Add v to Q's end
+     * While Q is not empty
+     *     Let x = dequeue Q
+     *     For each neighbor n of x
+     *         If n is not in M (not visited)
+     *             If M.get(x) = B, let n's group = A, otherwise n's group = B
+     *             Add (n, n's group) to M
+     *             Add n to Q's end
+     *         Else (visited)
+     *             If M.get(x) = B and M.get(n) = B
+     *                 M.set(n, C)
+     *             If M.get(x) = C and M.get(n) = C
+     *                 M.set(x, A)
+     *                 Add x to Q's front (in case some n has been looped before x is changed)
+     *             If M.get(x) = A and M.get(n) = A
+     *                 Return false
+     * Return true
+     * --
+     * Seems to work for the given tests, but haven't been tested thoroughly.
+     */
+    private boolean bfsThree(String v, String group, HashMap<String, String> groups) {
+        LinkedList<String> queue = new LinkedList<>();
+        groups.put(v, group);
+        queue.addLast(v);
+        while (!queue.isEmpty()) {
+            String x = queue.removeFirst();
+            for (String n : g.neighbors(x)) {
+                if (!groups.containsKey(n)) {
+                    if (groups.get(x) == "C") {
+                    }
+                    String xGroup = "B";
+                    if (groups.get(x) == "B") {
+                        xGroup = "A";
+                    }
+                    groups.put(n, xGroup);
+                    queue.addLast(n);
+                }
+                else {
+                    if (groups.get(x) == "B" && groups.get(n) == "B") {
+                        groups.put(n, "C");
+                    }
+                    else if (groups.get(x) == "C" && groups.get(n) == "C") {
+                        groups.put(x, "A");
+                        queue.addFirst(x);
+                    }
+                    else if (groups.get(x) == "A" && groups.get(n) == "A") {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
 
     /* HELPERS FOR READING IN CSV FILES. */
 
