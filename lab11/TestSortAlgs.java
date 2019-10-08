@@ -2,11 +2,18 @@ import edu.princeton.cs.algs4.Queue;
 
 import org.junit.Test;
 
+import java.util.Random;
+
 import static org.junit.Assert.*;
+
+/**
+ * @author Hsingyi Lin
+ * date    10/08/2019
+ */
 
 public class TestSortAlgs {
 
-    @Test
+    @Test  // doesn't use isSorted method
     public void testQuickSort() {
         Queue<String> tas = new Queue<>();
         tas.enqueue("Joe");
@@ -19,7 +26,7 @@ public class TestSortAlgs {
         }
     }
 
-    @Test
+    @Test  // doesn't use isSorted method
     public void testMergeSort() {
         Queue<String> tas = new Queue<>();
         tas.enqueue("Joe");
@@ -45,6 +52,44 @@ public class TestSortAlgs {
         tas.enqueue(17);
         tas.enqueue(17);
         Queue<Integer> sorted = MergeSort.mergeSort(tas);
+        assertTrue(isSorted(sorted));
+    }
+
+    @Test
+    public void testQuickSort2() {
+        Queue<Integer> tas = new Queue<>();
+        tas.enqueue(32);
+        tas.enqueue(15);
+        tas.enqueue(2);
+        tas.enqueue(17);
+        tas.enqueue(19);
+        tas.enqueue(26);
+        tas.enqueue(41);
+        tas.enqueue(17);
+        tas.enqueue(17);
+        Queue<Integer> sorted = QuickSort.quickSort(tas);
+        assertTrue(isSorted(sorted));
+    }
+
+    @Test
+    public void testMergeSort3() {
+        Random r = new Random();
+        Queue<Integer> tas = new Queue<>();
+        for (int i = 0; i < 10000; i++) {
+            tas.enqueue(r.nextInt());
+        }
+        Queue<Integer> sorted = MergeSort.mergeSort(tas);
+        assertTrue(isSorted(sorted));
+    }
+
+    @Test
+    public void testQuickSort3() {
+        Random r = new Random();
+        Queue<Integer> tas = new Queue<>();
+        for (int i = 0; i < 10000; i++) {
+            tas.enqueue(r.nextInt());
+        }
+        Queue<Integer> sorted = QuickSort.quickSort(tas);
         assertTrue(isSorted(sorted));
     }
 

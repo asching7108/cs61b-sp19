@@ -53,11 +53,23 @@ public class QuickSort {
      *                  all of the items in unsorted that are equal to the given pivot.
      * @param greater   An empty Queue. When the function completes, this queue will contain
      *                  all of the items in unsorted that are greater than the given pivot.
+     *
+     * Filled by Hsingyi Lin 10/07/2019
      */
     private static <Item extends Comparable> void partition(
             Queue<Item> unsorted, Item pivot,
             Queue<Item> less, Queue<Item> equal, Queue<Item> greater) {
-        // Your code here!
+        for (Item i : unsorted) {
+            if (i.compareTo(pivot) < 0) {
+                less.enqueue(i);
+            }
+            else if (i.compareTo(pivot) == 0) {
+                equal.enqueue(i);
+            }
+            else {
+                greater.enqueue(i);
+            }
+        }
     }
 
     /**
@@ -65,10 +77,24 @@ public class QuickSort {
      *
      * @param items  A Queue of possibly unsorted items
      * @return       A Queue of sorted items
+     *
+     * Filled by Hsingyi Lin 10/07/2019
      */
     public static <Item extends Comparable> Queue<Item> quickSort(
             Queue<Item> items) {
-        // Your code here!
-        return items;
+        if (items.size() <= 1) {
+            return items;
+        }
+        Item pivot = getRandomItem(items);
+        Queue<Item> less = new Queue<>();
+        Queue<Item> equal = new Queue<>();
+        Queue<Item> greater = new Queue<>();
+        partition(items, pivot, less, equal, greater);
+        less = quickSort(less);
+        greater = quickSort(greater);
+        Queue<Item> sorted = catenate(less, equal);
+        sorted = catenate(sorted, greater);
+        return sorted;
     }
+
 }
