@@ -182,10 +182,10 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
         T smallest = heap[1].getItem();
         heap[1] = heap[size()];
         heap[size()] = null;
+        items.remove(smallest);
         if (size() > 0) {
             sink(1);
         }
-        items.remove(smallest);
         return smallest;
     }
 
