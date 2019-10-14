@@ -17,8 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static bearmaps.proj2c.utils.Constants.SEMANTIC_STREET_GRAPH;
-import static bearmaps.proj2c.utils.Constants.ROUTE_LIST;
+import static bearmaps.proj2c.utils.Constants.*;
 
 /**
  * Handles requests from the web browser for map images. These images
@@ -81,14 +80,64 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
      *                    string. <br>
      * "query_success" : Boolean, whether the query was able to successfully complete; don't
      *                    forget to set this to true on success! <br>
+     *
+     * Filled out by Hsingyi Lin 10/13/2019
      */
     @Override
     public Map<String, Object> processRequest(Map<String, Double> requestParams, Response response) {
-        //System.out.println("yo, wanna know the parameters given by the web browser? They are:");
-        //System.out.println(requestParams);
+        System.out.println(requestParams);
         Map<String, Object> results = new HashMap<>();
-        System.out.println("Since you haven't implemented RasterAPIHandler.processRequest, nothing is displayed in "
-                + "your browser.");
+
+        /* Compute the LonDPP of the query box */
+        double widthQueryBox = requestParams.get("lrlon") - requestParams.get("ullon");
+        double lonDPPQueryBox = widthQueryBox / requestParams.get("w");
+
+        /* Find the returned image depth */
+        int depth = 7;
+        double widthDepth0 = ROOT_LRLON - ROOT_ULLON;
+        for (int i = 0; i <= 7; i++) {
+            double lonDPPDepth = (widthDepth0 / Math.pow(2, i)) / TILE_SIZE;
+            if (lonDPPDepth <= lonDPPQueryBox) {
+                depth = i;
+                break;
+            }
+        }
+        results.put("depth", depth);
+
+        /* Update the four corner of the query box to be within range */
+        double ul_lon = Math.max(ROOT_ULLON, requestParams.get("ullon"));
+        double ul_lat = Math.min(ROOT_ULLAT, requestParams.get("ullat"));
+        double lr_lon = Math.min(ROOT_LRLON, requestParams.get("lrlon"));
+        double lr_lat = Math.max(ROOT_LRLAT, requestParams.get("lrlat"));
+
+        /* If the lon or lat of the query box is entirely out of range, the query fails. */
+        if ((lr_lon - ul_lon) <= 0 || (ul_lat - lr_lat) <= 0) {
+            return queryFail();
+        }
+
+        /* Compute the result of rastering */
+        int numTile = (int) Math.pow(2, depth);  // number of tiles per row or per column
+        double widthTile = widthDepth0 / numTile;
+        double heightTile = (ROOT_ULLAT - ROOT_LRLAT) / numTile;
+        int ulCol = (int) ((ul_lon - ROOT_ULLON) / widthTile);
+        int lrCol = numTile - (int) ((ROOT_LRLON - lr_lon) / widthTile) - 1;
+        int ulRow = (int) ((ROOT_ULLAT - ul_lat) / heightTile);
+        int lrRow = numTile - (int) ((lr_lat - ROOT_LRLAT) / heightTile) - 1;
+        results.put("raster_ul_lon", ROOT_ULLON + ulCol * widthTile);
+        results.put("raster_lr_lon", ROOT_ULLON + (lrCol + 1) * widthTile);
+        results.put("raster_ul_lat", ROOT_ULLAT - ulRow * heightTile);
+        results.put("raster_lr_lat", ROOT_ULLAT - (lrRow + 1) * heightTile);
+
+        /* Return the grid of images within range */
+        String[][] grid = new String[lrRow - ulRow + 1][lrCol - ulCol + 1];
+        for (int i = ulRow; i <= lrRow; i++) {
+            for (int j = ulCol; j <= lrCol; j++) {
+                grid[i - ulRow][j - ulCol] = "d" + depth + "_x" + j + "_y" + i + ".png";
+            }
+        }
+        results.put("render_grid", grid);
+        results.put("query_success", true);
+        System.out.println(results);
         return results;
     }
 
