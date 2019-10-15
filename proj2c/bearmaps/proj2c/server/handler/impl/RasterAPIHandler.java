@@ -81,7 +81,7 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
      * "query_success" : Boolean, whether the query was able to successfully complete; don't
      *                    forget to set this to true on success! <br>
      *
-     * Filled out by Hsingyi Lin 10/13/2019
+     * Filled out by Hsingyi Lin 10/13/2019.
      */
     @Override
     public Map<String, Object> processRequest(Map<String, Double> requestParams, Response response) {
