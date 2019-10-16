@@ -1,5 +1,6 @@
 package bearmaps.proj2c;
 
+import bearmaps.hw4.WeightedEdge;
 import bearmaps.hw4.streetmap.Node;
 import bearmaps.hw4.streetmap.StreetMapGraph;
 import bearmaps.lab9.LocationTrieSet;
@@ -17,6 +18,7 @@ import java.util.*;
  */
 public class AugmentedStreetMapGraph extends StreetMapGraph {
 
+    private List<Node> nodes;
     private HashMap<Point, Long> points;
     private KDTree kdtree;
     private LocationTrieSet trie;
@@ -31,7 +33,7 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
      */
     public AugmentedStreetMapGraph(String dbPath) {
         super(dbPath);
-        List<Node> nodes = this.getNodes();
+        nodes = this.getNodes();
 
         /* Initializes a map of points and node ids consisting of only those have neighbors. */
         points = new HashMap<>();
@@ -84,6 +86,7 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
         return trie.keysWithPrefix(cleanString(prefix));
     }
 
+
     /**
      * For Project Part III (gold points)
      * Collect all locations that match a cleaned <code>locationName</code>, and return
@@ -115,6 +118,42 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
             res.add(map);
         }
         return res;
+    }
+
+
+    /**
+     * Returns the distance of the two input node ids. This is only useful for Part IV
+     * of the project.
+     *
+     * @param from the start node id
+     * @param to the end node id
+     * @return the distance of the two input node ids
+     *
+     * Filled out by Hsingyi Lin 10/15/2019.
+     */
+    public double distance (Long from, Long to) {
+        return distance(lon(from), lon(to), lat(from), lat(to));
+    }
+
+
+    /**
+     * Returns the name of the <code>WeightedEdge</code> of the two input node ids.
+     * This is only useful for Part IV of the project.
+     *
+     * @param from the start node id
+     * @param to the end node id
+     * @return the <code>WeightedEdge</code> of the two input node ids
+     *
+     * Filled out by Hsingyi Lin 10/15/2019.
+     */
+    public String edgeName(Long from, Long to) {
+        List<WeightedEdge<Long>> neighbors = neighbors(from);
+        for (WeightedEdge e : neighbors) {
+            if (e.to().equals(to)) {
+                return e.getName();
+            }
+        }
+        return null;
     }
 
 

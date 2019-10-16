@@ -179,7 +179,7 @@ public class StreetMapGraph implements AStarGraph<Long> {
      *
      * @source Kevin Lowe & Antares Chen, and https://www.movable-type.co.uk/scripts/latlong.html
      **/
-    private double distance(double lonV, double lonW, double latV, double latW) {
+    protected double distance(double lonV, double lonW, double latV, double latW) {
         double phi1 = Math.toRadians(latV);
         double phi2 = Math.toRadians(latW);
         double dphi = Math.toRadians(latW - latV);

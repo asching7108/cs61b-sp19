@@ -85,7 +85,6 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
      */
     @Override
     public Map<String, Object> processRequest(Map<String, Double> requestParams, Response response) {
-        System.out.println(requestParams);
         Map<String, Object> results = new HashMap<>();
 
         /* Compute the LonDPP of the query box */
@@ -137,7 +136,6 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
         }
         results.put("render_grid", grid);
         results.put("query_success", true);
-        System.out.println(results);
         return results;
     }
 

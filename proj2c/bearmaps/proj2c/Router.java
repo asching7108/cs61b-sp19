@@ -1,5 +1,6 @@
 package bearmaps.proj2c;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -37,10 +38,75 @@ public class Router {
      *              corresponds to a node from the graph in the route.
      * @return A list of NavigatiionDirection objects corresponding to the input
      * route.
+     *
+     * Filled out by Hsingyi Lin 10/15/2019.
      */
     public static List<NavigationDirection> routeDirections(AugmentedStreetMapGraph g, List<Long> route) {
-        /* fill in for part IV */
-        return null;
+        /* If there's only 0 or 1 node on the route, return null since no route
+           can be formed. */
+        if (route.size() < 2) {
+            return null;
+        }
+        LinkedList<NavigationDirection> res = new LinkedList<>();
+        /* Initializes the first nav. direction. */
+        Long last = route.remove(0);
+        route.add(last);              // always add the node back to avoid changing the route
+        Long curr = route.remove(0);
+        route.add(curr);
+        NavigationDirection init = createNav(g, last, curr, 0);
+        res.add(init);
+        /* If there's only 2 node on the route, return the nav. direction. */
+        if (route.size() < 3) {
+            return res;
+        }
+        /* For all the rest nodes, considers the previous and current bearings and ways. */
+        for (int i = 0; i < route.size() - 2; i++) {
+            Long next = route.remove(0);
+            route.add(next);
+            String currWay = res.getLast().way;
+            String nextWay = g.edgeName(next, curr);
+            double currBearing = NavigationDirection.bearing(g.lon(last), g.lon(curr), g.lat(last), g.lat(curr));
+            double nextBearing = NavigationDirection.bearing(g.lon(curr), g.lon(next), g.lat(curr), g.lat(next));
+            int direction = NavigationDirection.getDirection(currBearing, nextBearing);
+            /* If both ways are null or have identical names, adds the new distance to the
+               previous nav. direction. */
+            if ((nextWay == null && currWay == NavigationDirection.UNKNOWN_ROAD)
+                    || (nextWay != null && nextWay.equals(currWay))) {
+                res.getLast().distance += g.distance(curr, next);
+            }
+            /* Otherwise both ways have different names, creates new nav. direction. */
+            else {
+                NavigationDirection nav = createNav(g, curr, next, direction);
+                res.add(nav);
+            }
+            last = curr;
+            curr = next;
+        }
+        return res;
+    }
+
+    /**
+     * Helper function to create and return a nav. direction by the given inputs.
+     *
+     * @param g The graph to use.
+     * @param from The id of the first node
+     * @param to the id of the second node
+     * @param drct the direction from the first node to the second
+     * @return the nav. direction created
+     *
+     * Filled out by Hsingyi Lin 10/15/2019.
+     */
+    private static NavigationDirection createNav(AugmentedStreetMapGraph g,
+                                          Long from,
+                                          Long to,
+                                          int drct) {
+        NavigationDirection nav = new NavigationDirection();
+        nav.direction = drct;
+        nav.distance = g.distance(from, to);
+        if (g.edgeName(from, to) != null) {
+            nav.way = g.edgeName(from, to);
+        }
+        return nav;
     }
 
     /**
