@@ -18,7 +18,6 @@ import java.util.*;
  */
 public class AugmentedStreetMapGraph extends StreetMapGraph {
 
-    private List<Node> nodes;
     private HashMap<Point, Long> points;
     private KDTree kdtree;
     private LocationTrieSet trie;
@@ -33,7 +32,7 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
      */
     public AugmentedStreetMapGraph(String dbPath) {
         super(dbPath);
-        nodes = this.getNodes();
+        List<Node> nodes = this.getNodes();
 
         /* Initializes a map of points and node ids consisting of only those have neighbors. */
         points = new HashMap<>();

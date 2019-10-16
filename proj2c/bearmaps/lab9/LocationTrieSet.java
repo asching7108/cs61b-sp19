@@ -18,21 +18,18 @@ import java.util.List;
 public class LocationTrieSet {
 
     private TrieNode root;
-    private int size;
 
     /**
      * Stores a character, key identification, and a HashMap for the following
      * characters.
      */
     private static class TrieNode {
-        private char ch;
         private boolean isKey;
         private String fullkey;
         private ArrayList<Node> nodes;
         private HashMap<Character, TrieNode> next;
-        private TrieNode(char c, boolean k) {
-            ch = c;
-            isKey = k;
+        private TrieNode() {
+            isKey = false;
             fullkey = null;
             nodes = new ArrayList<>();
             next = new HashMap<>();
@@ -43,8 +40,7 @@ public class LocationTrieSet {
      * Initializes the root node with an arbitrary character.
      */
     public LocationTrieSet() {
-        root = new TrieNode('r', false);
-        size = 0;
+        root = new TrieNode();
     }
 
     /**
@@ -52,7 +48,6 @@ public class LocationTrieSet {
      */
     public void clear() {
         root.next.clear();
-        size = 0;
     }
 
     /**
@@ -105,8 +100,7 @@ public class LocationTrieSet {
     private void addHelper(TrieNode n, String k, String f, Node node) {
         char ch = k.charAt(0);
         if (!n.next.containsKey(ch)) {
-            n.next.put(ch, new TrieNode(ch, false));
-            size++;
+            n.next.put(ch, new TrieNode());
         }
         TrieNode nextTrieNode = n.next.get(ch);
         if (k.length() == 1) {
@@ -186,7 +180,7 @@ public class LocationTrieSet {
      * @param keys the list of keys with the given prefix
      */
     private void collectHelper(String s, TrieNode n, List<String> keys) {
-        if (n.isKey == true) {
+        if (n.isKey) {
             keys.add(n.fullkey);
         }
         for (Character ch : n.next.keySet()) {

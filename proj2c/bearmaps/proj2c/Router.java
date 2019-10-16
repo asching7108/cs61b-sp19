@@ -70,7 +70,7 @@ public class Router {
             int direction = NavigationDirection.getDirection(currBearing, nextBearing);
             /* If both ways are null or have identical names, adds the new distance to the
                previous nav. direction. */
-            if ((nextWay == null && currWay == NavigationDirection.UNKNOWN_ROAD)
+            if ((nextWay == null && Objects.equals(currWay, NavigationDirection.UNKNOWN_ROAD))
                     || (nextWay != null && nextWay.equals(currWay))) {
                 res.getLast().distance += g.distance(curr, next);
             }

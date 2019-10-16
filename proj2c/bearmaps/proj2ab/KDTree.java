@@ -63,14 +63,14 @@ public class KDTree implements PointSet{
      * layer = 0: partitions like an X-based Tree
      * layer = 1: partitions like an Y-based Tree
      */
-    private class Node implements Comparable {
+    private static class Node implements Comparable {
 
         private Point point;
         private int layer;
         private Node left;
         private Node right;
 
-        public Node(Point p, int l) {
+        Node(Point p, int l) {
             point = p;
             layer = l;
             left = null;
@@ -147,16 +147,12 @@ public class KDTree implements PointSet{
      */
     private boolean badSideUseful(Node n, Point goal, Node best) {
         if (n.layer == 0) {
-            if (Point.distance(new Point(n.point.getX(), goal.getY()), goal)
-                    < Point.distance(best.point, goal)) {
-                return true;
-            }
+            return Point.distance(new Point(n.point.getX(), goal.getY()), goal)
+                    < Point.distance(best.point, goal);
         }
         if (n.layer == 1) {
-            if (Point.distance(new Point(goal.getX(), n.point.getY()), goal)
-                    < Point.distance(best.point, goal)) {
-                return true;
-            }
+            return Point.distance(new Point(goal.getX(), n.point.getY()), goal)
+                    < Point.distance(best.point, goal);
         }
         return false;
     }

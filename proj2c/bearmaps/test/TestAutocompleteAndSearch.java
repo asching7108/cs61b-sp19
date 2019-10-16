@@ -16,7 +16,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class TestAutocompleteAndSearch {
 
-    private static final String OSM_DB_PATH = "../library-sp19/data/proj2c_xml/berkeley-2019.osm.xml";
+    private static final String OSM_DB_PATH = "data/proj2c_xml/berkeley-2019.osm.xml";
     private static AugmentedStreetMapGraph graph;
     private static boolean initialized = false;
 

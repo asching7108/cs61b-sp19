@@ -252,8 +252,9 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
         BufferedImage tileImg = null;
         if (tileImg == null) {
             try {
-                File in = new File(imgPath);
-                tileImg = ImageIO.read(in);
+                tileImg = ImageIO.read(Thread.currentThread().getContextClassLoader().getResource(imgPath));
+//                File in = new File(imgPath);
+//                tileImg = ImageIO.read(in);
             } catch (IOException | NullPointerException e) {
                 e.printStackTrace();
             }

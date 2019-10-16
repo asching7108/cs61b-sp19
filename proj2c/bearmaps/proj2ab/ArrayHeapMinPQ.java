@@ -130,9 +130,7 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
      */
     private void resize(int newSize) {
         PriorityNode[] newHeap = new ArrayHeapMinPQ.PriorityNode[newSize];
-        for (int i = 1; i <= size(); i++) {
-            newHeap[i] = heap[i];
-        }
+        System.arraycopy(heap, 1, newHeap, 1, size());
         heap = newHeap;
     }
 
@@ -260,9 +258,9 @@ public class ArrayHeapMinPQ<T> implements ExtrinsicMinPQ<T> {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("");
+        StringBuilder sb = new StringBuilder();
         for (int i = 1; i <= size(); i++) {
-            sb.append(heap[i].getItem() + " ");
+            sb.append(heap[i].getItem()).append(" ");
         }
         return sb.toString();
     }
