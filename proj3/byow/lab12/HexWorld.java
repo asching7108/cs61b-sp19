@@ -54,6 +54,23 @@ public class HexWorld {
     }
 
     /**
+     * Initializes an empty world and filled it with TETile NOTHING.
+     *
+     * @param width the width of the world
+     * @param height the height of the world
+     * @return the world
+     */
+    private TETile[][] initializeEmptyWorld(int width, int height) {
+        TETile[][] hexWorld = new TETile[width][height];
+        for (int x = 0; x < hexWorld.length; x++) {
+            for (int y = 0; y < hexWorld[0].length; y++) {
+                hexWorld[x][y] = Tileset.NOTHING;
+            }
+        }
+        return hexWorld;
+    }
+
+    /**
      * Draws each row of hexes. There are 5 columns of hexes in total.
      * For the top and bottom row, there's only a hex in the middle column.
      * For all other rows, if the row index is 1, 3, 5 or 7, there are two
@@ -87,16 +104,6 @@ public class HexWorld {
      */
     private Position hexOffset(int size, int row, int col) {
         return new Position(col * (size * 2 - 1) + 2, row * size + 2);
-    }
-
-    private TETile[][] initializeEmptyWorld(int width, int height) {
-        TETile[][] hexWorld = new TETile[width][height];
-        for (int x = 0; x < hexWorld.length; x++) {
-            for (int y = 0; y < hexWorld[0].length; y++) {
-                hexWorld[x][y] = Tileset.NOTHING;
-            }
-        }
-        return hexWorld;
     }
 
     /**
