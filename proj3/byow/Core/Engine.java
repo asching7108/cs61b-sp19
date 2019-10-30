@@ -9,6 +9,16 @@ public class Engine {
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
 
+    private int savedStatus;
+    private StringBuilder savedSeedToBe;
+    private long savedSeed;
+
+    public Engine() {
+        savedStatus = 0;
+        savedSeedToBe = new StringBuilder("");
+        savedSeed = -1;
+    }
+
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
@@ -46,7 +56,41 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
-        TETile[][] finalWorldFrame = null;
-        return finalWorldFrame;
+        InputSource inputSource = new StringInputSource(input);
+
+        int status = 0;
+        StringBuilder seedToBe = new StringBuilder("");
+        long seed = -1;
+
+        while (inputSource.possibleNextInput()) {
+            char ch = Character.toUpperCase(inputSource.getNextKey());
+            if (ch == 'L') {
+                status = savedStatus;
+                seedToBe = savedSeedToBe;
+                seed = savedSeed;
+            } else if (status == 0 && ch == 'N') {
+                status = 1;
+            } else if (status == 1 && Character.isDigit(ch)) {
+                seedToBe.append(ch);
+            } else if (status == 1 && ch == 'S') {
+                seed = Integer.parseInt(seedToBe.toString());
+                status = 2;
+            } else if (ch == ':') {
+                ch = Character.toUpperCase(inputSource.getNextKey());
+                if (ch == 'Q') {
+                    savedStatus = status;
+                    savedSeedToBe = seedToBe;
+                    savedSeed = seed;
+                }
+            }
+        }
+
+        if (status != 2) {
+            return null;
+        }
+
+        World w = new World(seed, WIDTH, HEIGHT);
+        return w.worldFrame();
     }
+
 }

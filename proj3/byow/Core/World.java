@@ -36,16 +36,16 @@ public class World {
      *
      * @param seed the random seed
      */
-    World(int seed) {
+    World(long seed, int width, int height) {
         random = new Random(seed);
-        TERenderer ter = new TERenderer();
-        ter.initialize(WORLD_WIDTH, WORLD_HEIGHT);
-        world = new TETile[WORLD_WIDTH][WORLD_HEIGHT];
+        //TERenderer ter = new TERenderer();
+        //ter.initialize(WORLD_WIDTH, WORLD_HEIGHT);
+        world = new TETile[width][height];
         initializeWorld();
         int leafNum = RandomUtils.uniform(random, LEAF_MAX - LEAF_MIN + 1) + LEAF_MIN;
-        bsp = new BSPTree(WORLD_WIDTH, WORLD_HEIGHT, leafNum, random);
+        bsp = new BSPTree(width, height, leafNum, random);
         generateWorld();
-        ter.renderFrame(world);
+        //ter.renderFrame(world);
     }
 
     /**
@@ -135,7 +135,6 @@ public class World {
         }
     }
 
-    public static void main(String[] args) {
-        new World(2019);
-    }
+    public TETile[][] worldFrame() { return world; }
+
 }
