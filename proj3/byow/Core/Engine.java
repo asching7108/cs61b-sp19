@@ -1,22 +1,33 @@
 package byow.Core;
 
+import byow.SaveDemo.Editor;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
+import edu.princeton.cs.introcs.StdDraw;
+
+import java.awt.*;
+import java.io.*;
 
 public class Engine {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
-    public static final int WIDTH = 80;
-    public static final int HEIGHT = 30;
+    private static final int WIDTH = 60;
+    private static final int HEIGHT = 40;
+    public enum Direction {UP, RIGHT, DOWN, LEFT};
 
-    private int savedStatus;
-    private StringBuilder savedSeedToBe;
-    private long savedSeed;
+    private StringBuilder inputs;
+
+    private int status;
+    private StringBuilder seedToBe;
+    private long seed;
+    private World world;
 
     public Engine() {
-        savedStatus = 0;
-        savedSeedToBe = new StringBuilder("");
-        savedSeed = -1;
+        inputs = new StringBuilder("");
+        status = 0;
+        seedToBe = new StringBuilder("");
+        seed = -1;
+        world = null;
     }
 
     /**
@@ -24,6 +35,16 @@ public class Engine {
      * including inputs from the main menu.
      */
     public void interactWithKeyboard() {
+        initialize();
+        drawMenu();
+        InputSource inputSource = new KeyboardInputSource();
+        while (status != 2) {
+            parseMenuChoice(inputSource);
+        }
+        drawWorld();
+        while (true) {
+            parseMovement(inputSource, true);
+        }
     }
 
     /**
@@ -57,40 +78,128 @@ public class Engine {
         // that works for many different input types.
 
         InputSource inputSource = new StringInputSource(input);
-
-        int status = 0;
-        StringBuilder seedToBe = new StringBuilder("");
-        long seed = -1;
-
+        while (status != 2 && inputSource.possibleNextInput()) {
+            parseMenuChoice(inputSource);
+        }
         while (inputSource.possibleNextInput()) {
-            char ch = Character.toUpperCase(inputSource.getNextKey());
-            if (ch == 'L') {
-                status = savedStatus;
-                seedToBe = savedSeedToBe;
-                seed = savedSeed;
-            } else if (status == 0 && ch == 'N') {
-                status = 1;
-            } else if (status == 1 && Character.isDigit(ch)) {
-                seedToBe.append(ch);
-            } else if (status == 1 && ch == 'S') {
-                seed = Integer.parseInt(seedToBe.toString());
-                status = 2;
-            } else if (ch == ':') {
-                ch = Character.toUpperCase(inputSource.getNextKey());
-                if (ch == 'Q') {
-                    savedStatus = status;
-                    savedSeedToBe = seedToBe;
-                    savedSeed = seed;
-                }
-            }
+            parseMovement(inputSource, false);
         }
-
-        if (status != 2) {
-            return null;
-        }
-
-        World w = new World(seed, WIDTH, HEIGHT);
-        return w.worldFrame();
+        return world.worldFrame();
     }
 
+    private void parseMenuChoice(InputSource inputSource) {
+        char ch = Character.toUpperCase(inputSource.getNextKey());
+        if (status == 0 && ch == 'L') {
+            load();
+        }
+        if (status == 0 && ch == 'N') {
+            status = 1;
+            inputs.append(ch);
+        } else if (status == 1 && Character.isDigit(ch)) {
+            seedToBe.append(ch);
+            inputs.append(ch);
+        } else if (status == 1 && ch == 'S') {
+            seed = Integer.parseInt(seedToBe.toString());
+            status = 2;
+            inputs.append(ch);
+            world = new World(seed, WIDTH, HEIGHT);
+        } else if (ch == 'Q') {
+            System.exit(0);
+        }
+    }
+
+    private void parseMovement(InputSource inputSource, boolean draw) {
+        char ch = Character.toUpperCase(inputSource.getNextKey());
+        switch (ch) {
+            case 'A': world.movePlayer(Direction.LEFT);
+                      break;
+            case 'W': world.movePlayer(Direction.UP);
+                      break;
+            case 'D': world.movePlayer(Direction.RIGHT);
+                      break;
+            case 'S': world.movePlayer(Direction.DOWN);
+                      break;
+            case ':': status = 3;
+                      break;
+            case 'Q': if (status == 3) {
+                          save();
+                      }
+                      System.exit(0);
+        }
+        if (ch != ':') {
+            inputs.append(ch);
+        }
+        if (draw) {
+            drawWorld();
+        }
+    }
+
+    private void initialize() {
+        StdDraw.setCanvasSize(WIDTH * 16, HEIGHT * 16);
+        StdDraw.setPenColor(new Color(255, 255, 255));
+        StdDraw.setXscale(0, WIDTH);
+        StdDraw.setYscale(0, HEIGHT);
+        StdDraw.clear(Color.BLACK);
+        StdDraw.enableDoubleBuffering();
+    }
+
+    private void drawMenu() {
+        int midWidth = WIDTH / 2;
+        int midHeight = HEIGHT / 2;
+
+        StdDraw.setPenColor(Color.white);
+        Font titleFont = new Font("Monaco", Font.BOLD, 30);
+        StdDraw.setFont(titleFont);
+        StdDraw.text(midWidth, HEIGHT - 10, "CS61B: FINAL GAME");
+        Font subtitleFont = new Font("Monaco", Font.BOLD, 20);
+        StdDraw.setFont(subtitleFont);
+        StdDraw.text(midWidth, midHeight, "NEW GAME (N)");
+        StdDraw.text(midWidth, midHeight - 2, "LOAD GAME (L)");
+        StdDraw.text(midWidth, midHeight - 4, "QUIT (Q)");
+        StdDraw.show();
+    }
+
+    private void drawWorld() {
+        TETile[][] worldFrame = world.worldFrame();
+        ter.renderFrame(worldFrame);
+    }
+
+    private void save() {
+        File f = new File("./save_data.txt");
+        try {
+            if (!f.exists()) {
+                f.createNewFile();
+            }
+            FileOutputStream fs = new FileOutputStream(f);
+            ObjectOutputStream os = new ObjectOutputStream(fs);
+            os.writeObject(inputs.toString());
+        }  catch (FileNotFoundException e) {
+            System.out.println("file not found");
+            System.exit(0);
+        } catch (IOException e) {
+            System.out.println(e);
+            System.exit(0);
+        }
+    }
+
+    private void load() {
+        File f = new File("./save_data.txt");
+        String loadInputs = null;
+        if (f.exists()) {
+            try {
+                FileInputStream fs = new FileInputStream(f);
+                ObjectInputStream os = new ObjectInputStream(fs);
+                loadInputs = os.readObject().toString();
+            } catch (FileNotFoundException e) {
+                System.out.println("file not found");
+                System.exit(0);
+            } catch (IOException e) {
+            } catch (ClassNotFoundException e) {
+                System.out.println("class not found");
+                System.exit(0);
+            }
+        }
+        interactWithInputString(loadInputs);
+        drawWorld();
+    }
 }

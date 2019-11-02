@@ -1,6 +1,5 @@
 package byow.Core;
 
-import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
@@ -18,16 +17,16 @@ import java.util.*;
  *  * Rooms and hallways must have walls that are visually distinct from floors.
  *  * Rooms and hallways should be connected.
  *
+ * @author Hsingyi Lin
  */
 public class World {
-    private static final int WORLD_WIDTH = 60;
-    private static final int WORLD_HEIGHT = 40;
     private static final int LEAF_MIN = 20;
     private static final int LEAF_MAX = 30;
 
     private Random random;     // random seed
     private TETile[][] world;  // 2d world of TETiles
     private BSPTree bsp;       // BSPTree that stores rooms and hallways
+    private Position player;   // Position of the player
 
     /**
      * Generates the world with the given seed. Randomly decides the number of
@@ -38,27 +37,12 @@ public class World {
      */
     World(long seed, int width, int height) {
         random = new Random(seed);
-        //TERenderer ter = new TERenderer();
-        //ter.initialize(WORLD_WIDTH, WORLD_HEIGHT);
         world = new TETile[width][height];
         initializeWorld();
         int leafNum = RandomUtils.uniform(random, LEAF_MAX - LEAF_MIN + 1) + LEAF_MIN;
         bsp = new BSPTree(width, height, leafNum, random);
+        createPlayer();
         generateWorld();
-        //ter.renderFrame(world);
-    }
-
-    /**
-     * Represents the x and y value of a tile on the 2D world.
-     */
-    static class Position {
-        int x;
-        int y;
-
-        Position(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
     }
 
     /**
@@ -84,6 +68,7 @@ public class World {
         for (Room h : hallways) {
             addRoom(h);
         }
+        addTile(player, Tileset.AVATAR);
     }
 
     /**
@@ -135,6 +120,32 @@ public class World {
         }
     }
 
+    private void createPlayer() {
+        int roomIndex = RandomUtils.uniform(random, bsp.rooms().size());
+        Room r = bsp.rooms().get(roomIndex);
+        player = new Position(r.xOffset() + r.width() / 2, r.yOffset() + r.height() / 2);
+    }
+
     public TETile[][] worldFrame() { return world; }
 
+    public boolean movePlayer(Engine.Direction d) {
+        Position target = target(d);
+        if (world[target.x][target.y].equals(Tileset.FLOOR)) {
+            addTile(player, Tileset.FLOOR);
+            addTile(target, Tileset.AVATAR);
+            player = target;
+            return true;
+        }
+        return false;
+    }
+
+    private Position target(Engine.Direction d) {
+        switch(d) {
+            case UP: return new Position(player.x, player.y + 1);
+            case RIGHT: return new Position(player.x + 1, player.y);
+            case DOWN: return new Position(player.x, player.y - 1);
+            case LEFT: return new Position(player.x - 1, player.y);
+            default: return player;
+        }
+    }
 }

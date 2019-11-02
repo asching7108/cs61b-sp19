@@ -6,6 +6,8 @@ import java.util.*;
  * A BSP (Binary Space Partition) Tree that splits horizontally or vertically
  * (randomly decided) to the given number of leaves, randomly creates rooms,
  * and generates hallways that connect all rooms.
+ *
+ * @author Hsingyi Lin
  */
 public class BSPTree {
     private static final int ROOM_SPLIT_MIN = 6;
@@ -13,8 +15,8 @@ public class BSPTree {
 
     Random r;                   // random seed
     Leaf root;                  // the root leaf
-    LinkedList<Room> rooms;     // list of rooms
-    LinkedList<Room> hallways;  // list of hallways
+    ArrayList<Room> rooms;     // list of rooms
+    ArrayList<Room> hallways;  // list of hallways
 
     /**
      * Generates the BSPTree and initializes all member variables.
@@ -27,9 +29,9 @@ public class BSPTree {
     BSPTree(int w, int h, int leafNum, Random r) {
         this.r = r;
         root = new Leaf(0, 0, w, h);
-        rooms = new LinkedList<>();
-        hallways = new LinkedList<>();
-        /* Splits the leaves with breadth first search order. */
+        rooms = new ArrayList<>();
+        hallways = new ArrayList<>();
+        // Splits the leaves with breadth first search order.
         ArrayDeque<Leaf> pq = new ArrayDeque<>();
         pq.add(root);
         leafNum--;
@@ -78,14 +80,14 @@ public class BSPTree {
             if (RandomUtils.uniform(r) > 0.8) {
                 return;
             }
-            /* The width and height of the room are randomly decided but no less than
-             * the ROOM_SIZE_MIN or half the leaf width / height + 2. */
+            // The width and height of the room are randomly decided but no less than
+            // the ROOM_SIZE_MIN or half the leaf width / height + 2.
             int min_width = Math.max(ROOM_SIZE_MIN, w / 2 + 2);
             int min_height = Math.max(ROOM_SIZE_MIN, h / 2 + 2);
             int width = RandomUtils.uniform(r, w - min_width + 1) + min_width;
             int height = RandomUtils.uniform(r, h - min_height + 1) + min_height;
-            /* The xOffset and yOffset of the room are randomly decided and keep the
-             * room within the range of the leaf. */
+            // The xOffset and yOffset of the room are randomly decided and keep the
+            // room within the range of the leaf.
             int xOffset = x;
             int yOffset = y;
             if (w > width) {
