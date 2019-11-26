@@ -1,5 +1,6 @@
 package byow.TileEngine;
 
+import byow.Core.Position;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
@@ -38,7 +39,7 @@ public class TERenderer {
         StdDraw.setXscale(0, width);
         StdDraw.setYscale(0, height);
 
-        StdDraw.clear(new Color(0, 0, 0));
+        StdDraw.clear(Color.black);
 
         StdDraw.enableDoubleBuffering();
         StdDraw.show();
@@ -86,7 +87,7 @@ public class TERenderer {
     public void renderFrame(TETile[][] world) {
         int numXTiles = world.length;
         int numYTiles = world[0].length;
-        StdDraw.clear(new Color(0, 0, 0));
+        StdDraw.clear(Color.black);
         Font font = new Font("Monaco", Font.BOLD, TILE_SIZE - 2);
         StdDraw.setFont(font);
         for (int x = 0; x < numXTiles; x += 1) {
@@ -98,6 +99,29 @@ public class TERenderer {
                 world[x][y].draw(x + xOffset, y + yOffset);
             }
         }
-        StdDraw.show();
+        //StdDraw.show();
     }
+
+    public void renderRestrictedFrame(TETile[][] world, Position player, Position treasure) {
+        int numXTiles = world.length;
+        int numYTiles = world[0].length;
+        StdDraw.clear(Color.black);
+        Font font = new Font("Monaco", Font.BOLD, TILE_SIZE - 2);
+        StdDraw.setFont(font);
+        for (int x = 0; x < numXTiles; x += 1) {
+            for (int y = 0; y < numYTiles; y += 1) {
+                if (world[x][y] == null) {
+                    throw new IllegalArgumentException("Tile at position x=" + x + ", y=" + y
+                            + " is null.");
+                }
+                if ((x >= player.x() - 1 && x <= player.x() + 1 )
+                        || (y >= player.y() - 1 && y <= player.y() + 1)
+                        || (x == treasure.x() && y == treasure.y())) {
+                    world[x][y].draw(x + xOffset, y + yOffset);
+                }
+            }
+        }
+        //StdDraw.show();
+    }
+
 }

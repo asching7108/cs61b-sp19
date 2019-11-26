@@ -1,6 +1,5 @@
 package byow.Core;
 
-import byow.SaveDemo.Editor;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import edu.princeton.cs.introcs.StdDraw;
@@ -8,42 +7,61 @@ import edu.princeton.cs.introcs.StdDraw;
 import java.awt.*;
 import java.io.*;
 
+/**
+ * Contains the two methods that allow interacting with the system and run the game.
+ *
+ * @author Hsingyi Lin
+ */
 public class Engine {
-    TERenderer ter = new TERenderer();
-    /* Feel free to change the width and height. */
-    private static final int WIDTH = 60;
-    private static final int HEIGHT = 40;
     public enum Direction {UP, RIGHT, DOWN, LEFT};
+    public enum Status {START, SEED, PLAY, WIN, LOSE};
 
+    private static final int WIDTH = 60;
+    private static final int HEIGHT = 43;
+    private static final int COUNTDOWN = 5;
+    private static final Font TITLE_FONT = new Font("Monaco", Font.BOLD, 30);
+    private static final Font SUBTITLE_FONT = new Font("Monaco", Font.BOLD, 20);
+    private static final Font REGULAR_FONT = new Font("Monaco", Font.BOLD, 16);
+
+    private TERenderer ter;
     private StringBuilder inputs;
-
-    private int status;
+    private Status status;
     private StringBuilder seedToBe;
     private long seed;
     private World world;
 
     public Engine() {
-        inputs = new StringBuilder("");
-        status = 0;
-        seedToBe = new StringBuilder("");
-        seed = -1;
-        world = null;
+        ter = new TERenderer();
     }
 
     /**
-     * Method used for exploring a fresh world. This method should handle all inputs,
-     * including inputs from the main menu.
+     * Method used for exploring a fresh world. This method handles all inputs.
      */
     public void interactWithKeyboard() {
-        initialize();
-        drawMenu();
-        InputSource inputSource = new KeyboardInputSource();
-        while (status != 2) {
-            parseMenuChoice(inputSource);
-        }
-        drawWorld();
+        // Initialize StdDraw
+        StdDraw.setCanvasSize(WIDTH * 16, HEIGHT * 16);
+        StdDraw.setXscale(0, WIDTH);
+        StdDraw.setYscale(0, HEIGHT);
+        StdDraw.enableDoubleBuffering();
+        ter.initialize(WIDTH, HEIGHT, 0, 2);
+
+        // Restart to the main menu when a game ends.
+        // Only exit program (directly) when the users enter "Q".
         while (true) {
-            parseMovement(inputSource, true);
+            initialize();
+            InputSource inputSource = new KeyboardInputSource();
+            // Handles inputs from the main menu and the prompt menu
+            drawMenu();
+            while (status != Status.PLAY) {
+                parseMenuChoice(inputSource, true);
+            }
+            // Handles inputs from the game
+            drawNewWorld();
+            while (status == Status.PLAY) {
+                parseMovement(inputSource, true);
+            }
+            // Let users press any key to continue
+            inputSource.getNextKey();
         }
     }
 
@@ -69,7 +87,6 @@ public class Engine {
      * @return the 2D TETile[][] representing the state of the world
      */
     public TETile[][] interactWithInputString(String input) {
-        // TODO: Fill out this method so that it run the engine using the input
         // passed in as an argument, and return a 2D tile representation of the
         // world that would have been drawn if the same inputs had been given
         // to interactWithKeyboard().
@@ -77,93 +94,226 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
+        initialize();
         InputSource inputSource = new StringInputSource(input);
-        while (status != 2 && inputSource.possibleNextInput()) {
-            parseMenuChoice(inputSource);
+        while (status != Status.PLAY && inputSource.possibleNextInput()) {
+            parseMenuChoice(inputSource, false);
         }
-        while (inputSource.possibleNextInput()) {
+        while (status == Status.PLAY && inputSource.possibleNextInput()) {
             parseMovement(inputSource, false);
         }
-        return world.worldFrame();
+        if (world != null) {
+            return world.worldFrame();
+        }
+        return null;
     }
 
-    private void parseMenuChoice(InputSource inputSource) {
+    /**
+     * Handles inputs from the main menu and the prompt menu.
+     *
+     * @param inputSource the inputSource
+     * @param draw if it's needed to draw
+     */
+    private void parseMenuChoice(InputSource inputSource, boolean draw) {
         char ch = Character.toUpperCase(inputSource.getNextKey());
-        if (status == 0 && ch == 'L') {
+        // Loads the game from file
+        if (status == Status.START && ch == 'L') {
             load();
         }
-        if (status == 0 && ch == 'N') {
-            status = 1;
+        // Prompts the users to enter the seed
+        else if (status == Status.START && ch == 'N') {
+            status = Status.SEED;
             inputs.append(ch);
-        } else if (status == 1 && Character.isDigit(ch)) {
+            if (draw) {
+                drawPrompt();
+            }
+        }
+        // Displays the seedToBe the users has entered
+        else if (status == Status.SEED && Character.isDigit(ch)) {
             seedToBe.append(ch);
             inputs.append(ch);
-        } else if (status == 1 && ch == 'S') {
-            seed = Integer.parseInt(seedToBe.toString());
-            status = 2;
+            if (draw) {
+                drawPrompt();
+            }
+        }
+        // Initializes the world with the seed
+        else if (status == Status.SEED && ch == 'S') {
+            seed = Long.parseLong(seedToBe.toString());
+            status = Status.PLAY;
             inputs.append(ch);
             world = new World(seed, WIDTH, HEIGHT);
-        } else if (ch == 'Q') {
+        }
+        // Exit program
+        else if (ch == 'Q') {
             System.exit(0);
         }
     }
 
+    /**
+     * Handles inputs from the game.
+     *
+     * @param inputSource the inputSource
+     * @param draw if it's needed to draw
+     */
     private void parseMovement(InputSource inputSource, boolean draw) {
         char ch = Character.toUpperCase(inputSource.getNextKey());
         switch (ch) {
-            case 'A': world.movePlayer(Direction.LEFT);
+            case 'A': status = world.movePlayer(Direction.LEFT);
+                      inputs.append(ch);
                       break;
-            case 'W': world.movePlayer(Direction.UP);
+            case 'W': status = world.movePlayer(Direction.UP);
+                      inputs.append(ch);
                       break;
-            case 'D': world.movePlayer(Direction.RIGHT);
+            case 'D': status = world.movePlayer(Direction.RIGHT);
+                      inputs.append(ch);
                       break;
-            case 'S': world.movePlayer(Direction.DOWN);
+            case 'S': status = world.movePlayer(Direction.DOWN);
+                      inputs.append(ch);
                       break;
-            case ':': status = 3;
+            case ':': save();
                       break;
-            case 'Q': if (status == 3) {
-                          save();
-                      }
-                      System.exit(0);
-        }
-        if (ch != ':') {
-            inputs.append(ch);
+            case 'Q': System.exit(0);
         }
         if (draw) {
             drawWorld();
+            if (status == Status.WIN || status == Status.LOSE) {
+                drawResult();
+            }
         }
     }
 
+    /**
+     * Initializes all member variables and resets the game.
+     */
     private void initialize() {
-        StdDraw.setCanvasSize(WIDTH * 16, HEIGHT * 16);
-        StdDraw.setPenColor(new Color(255, 255, 255));
-        StdDraw.setXscale(0, WIDTH);
-        StdDraw.setYscale(0, HEIGHT);
-        StdDraw.clear(Color.BLACK);
-        StdDraw.enableDoubleBuffering();
+        inputs = new StringBuilder("");
+        status = Status.START;
+        seedToBe = new StringBuilder("");
+        seed = -1;
+        world = null;
     }
 
+    /**
+     * Draws the main menu.
+     */
     private void drawMenu() {
         int midWidth = WIDTH / 2;
         int midHeight = HEIGHT / 2;
 
+        StdDraw.clear(Color.black);
         StdDraw.setPenColor(Color.white);
-        Font titleFont = new Font("Monaco", Font.BOLD, 30);
-        StdDraw.setFont(titleFont);
+        StdDraw.setFont(TITLE_FONT);
         StdDraw.text(midWidth, HEIGHT - 10, "CS61B: FINAL GAME");
-        Font subtitleFont = new Font("Monaco", Font.BOLD, 20);
-        StdDraw.setFont(subtitleFont);
+        StdDraw.setFont(SUBTITLE_FONT);
         StdDraw.text(midWidth, midHeight, "NEW GAME (N)");
         StdDraw.text(midWidth, midHeight - 2, "LOAD GAME (L)");
         StdDraw.text(midWidth, midHeight - 4, "QUIT (Q)");
         StdDraw.show();
     }
 
-    private void drawWorld() {
-        TETile[][] worldFrame = world.worldFrame();
-        ter.renderFrame(worldFrame);
+    /**
+     * Draws the prompt menu that lets the users enter the seed.
+     */
+    private void drawPrompt() {
+        int midWidth = WIDTH / 2;
+        int midHeight = HEIGHT / 2;
+
+        String input = inputs.toString();
+        input = input.substring(input.indexOf('N') + 1);
+
+        StdDraw.clear(Color.black);
+        StdDraw.setPenColor(Color.white);
+        StdDraw.setFont(TITLE_FONT);
+        StdDraw.text(midWidth, HEIGHT - 10, "NEW GAME");
+        StdDraw.setFont(SUBTITLE_FONT);
+        StdDraw.text(midWidth, midHeight, "Enter any number within 18 digits.");
+        StdDraw.text(midWidth, midHeight - 2, "Then press \"S\".");
+        StdDraw.setPenColor(Color.yellow);
+        StdDraw.text(midWidth, midHeight - 4, input);
+        StdDraw.show();
     }
 
+    /**
+     * Draws the game with 5 seconds of full map view.
+     */
+    private void drawNewWorld() {
+        TETile[][] worldFrame = world.worldFrame();
+        for (int i = COUNTDOWN; i > 0; i--) {
+            ter.renderFrame(worldFrame);
+            addInstruction();
+            addHint();
+            addCountdown(i);
+            StdDraw.show();
+            StdDraw.pause(1000);
+        }
+        drawWorld();
+    }
+
+    /**
+     * Draws the game with a cross view.
+     */
+    private void drawWorld() {
+        TETile[][] worldFrame = world.worldFrame();
+        ter.renderRestrictedFrame(worldFrame, world.getPlayer(), world.getTreasure());
+        addInstruction();
+        addHint();
+        StdDraw.show();
+    }
+
+    /**
+     * Adds instructions to StdDraw.
+     */
+    private void addInstruction() {
+        StdDraw.setFont(REGULAR_FONT);
+        StdDraw.setPenColor(Color.white);
+        StdDraw.textLeft(0, HEIGHT - 1, "A:LEFT W:UP D:RIGHT S:DOWN");
+        StdDraw.textRight(WIDTH - 1, HEIGHT - 1, "\":\":SAVE Q:QUIT");
+    }
+
+    /**
+     * Adds hints to StdDraw.
+     */
+    private void addHint() {
+        StdDraw.setPenColor(Color.yellow);
+        StdDraw.text(WIDTH / 2, 1,
+                "Get to the treasure without overlapping your previous track, and you win!");
+    }
+
+    /**
+     * Adds countdown messages to StdDraw.
+     *
+     * @param countDown the countdown in seconds
+     */
+    private void addCountdown(int countDown) {
+        StdDraw.setFont(REGULAR_FONT);
+        StdDraw.setPenColor(Color.yellow);
+        StdDraw.text(WIDTH / 2, HEIGHT - 2, "Hide full map in " + countDown + " seconds...");
+    }
+
+    /**
+     * Draws the game result with a full map view.
+     */
+    private void drawResult() {
+        TETile[][] worldFrame = world.worldFrame();
+        ter.renderFrame(worldFrame);
+        addInstruction();
+        StdDraw.setFont(REGULAR_FONT);
+        if (status == Status.WIN) {
+            StdDraw.setPenColor(Color.CYAN);
+            StdDraw.text(WIDTH / 2, HEIGHT - 2, "You found the treasure! You win!");
+        }
+        else if (status == Status.LOSE) {
+            StdDraw.setPenColor(Color.RED);
+            StdDraw.text(WIDTH / 2, HEIGHT - 2, "You stepped on your track! You lose!");
+        }
+        StdDraw.setPenColor(Color.yellow);
+        StdDraw.text(WIDTH / 2, 1, "Press any key to continue");
+        StdDraw.show();
+    }
+
+    /**
+     * Saves the current inputs to a text file.
+     */
     private void save() {
         File f = new File("./save_data.txt");
         try {
@@ -173,7 +323,7 @@ public class Engine {
             FileOutputStream fs = new FileOutputStream(f);
             ObjectOutputStream os = new ObjectOutputStream(fs);
             os.writeObject(inputs.toString());
-        }  catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             System.out.println("file not found");
             System.exit(0);
         } catch (IOException e) {
@@ -182,6 +332,9 @@ public class Engine {
         }
     }
 
+    /**
+     * Reads the saved text file and handles the inputs in the file.
+     */
     private void load() {
         File f = new File("./save_data.txt");
         String loadInputs = null;
@@ -194,12 +347,14 @@ public class Engine {
                 System.out.println("file not found");
                 System.exit(0);
             } catch (IOException e) {
+                System.out.println(e);
+                System.exit(0);
             } catch (ClassNotFoundException e) {
                 System.out.println("class not found");
                 System.exit(0);
             }
         }
         interactWithInputString(loadInputs);
-        drawWorld();
     }
+
 }

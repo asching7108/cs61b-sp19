@@ -11,13 +11,19 @@ public class StringInputSource implements InputSource {
 
     @Override
     public char getNextKey() {
-        char returnChar = input.charAt(index);
-        index += 1;
-        return returnChar;
+        if (input != null) {
+            char returnChar = input.charAt(index);
+            index += 1;
+            return returnChar;
+        }
+        return ' ';
     }
 
     @Override
     public boolean possibleNextInput() {
-        return index < input.length();
+        if (input != null) {
+            return index < input.length();
+        }
+        return false;
     }
 }

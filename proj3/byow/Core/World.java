@@ -2,7 +2,6 @@ package byow.Core;
 
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
-
 import java.util.*;
 
 /**
@@ -20,13 +19,14 @@ import java.util.*;
  * @author Hsingyi Lin
  */
 public class World {
-    private static final int LEAF_MIN = 20;
+    private static final int LEAF_MIN = 15;
     private static final int LEAF_MAX = 30;
 
     private Random random;     // random seed
     private TETile[][] world;  // 2d world of TETiles
     private BSPTree bsp;       // BSPTree that stores rooms and hallways
     private Position player;   // Position of the player
+    private Position treasure; // Position of the treasure
 
     /**
      * Generates the world with the given seed. Randomly decides the number of
@@ -37,11 +37,11 @@ public class World {
      */
     World(long seed, int width, int height) {
         random = new Random(seed);
-        world = new TETile[width][height];
+        world = new TETile[width][height - 3];
         initializeWorld();
         int leafNum = RandomUtils.uniform(random, LEAF_MAX - LEAF_MIN + 1) + LEAF_MIN;
-        bsp = new BSPTree(width, height, leafNum, random);
-        createPlayer();
+        bsp = new BSPTree(width, height - 3, leafNum, random);
+        createPlayerAndTreasure();
         generateWorld();
     }
 
@@ -69,6 +69,7 @@ public class World {
             addRoom(h);
         }
         addTile(player, Tileset.AVATAR);
+        addTile(treasure, Tileset.FLOWER);
     }
 
     /**
@@ -120,23 +121,39 @@ public class World {
         }
     }
 
-    private void createPlayer() {
+    private void createPlayerAndTreasure() {
         int roomIndex = RandomUtils.uniform(random, bsp.rooms().size());
         Room r = bsp.rooms().get(roomIndex);
         player = new Position(r.xOffset() + r.width() / 2, r.yOffset() + r.height() / 2);
+        int roomIndex2 = RandomUtils.uniform(random, bsp.rooms().size());
+        while (roomIndex2 == roomIndex) {
+            roomIndex2 = RandomUtils.uniform(random, bsp.rooms().size());
+        }
+        r = bsp.rooms().get(roomIndex2);
+        treasure = new Position(r.xOffset() + r.width() / 2, r.yOffset() + r.height() / 2);
     }
 
     public TETile[][] worldFrame() { return world; }
 
-    public boolean movePlayer(Engine.Direction d) {
+    public Position getPlayer() { return player; }
+
+    public Position getTreasure() { return treasure; }
+
+    public Engine.Status movePlayer(Engine.Direction d) {
         Position target = target(d);
-        if (world[target.x][target.y].equals(Tileset.FLOOR)) {
-            addTile(player, Tileset.FLOOR);
+        TETile t = world[target.x][target.y];
+        if (!t.equals(Tileset.WALL)) {
+            addTile(player, Tileset.TRACK);
             addTile(target, Tileset.AVATAR);
             player = target;
-            return true;
+            if (t.equals(Tileset.FLOWER)) {
+                return Engine.Status.WIN;
+            }
+            if (t.equals(Tileset.TRACK)) {
+                return Engine.Status.LOSE;
+            }
         }
-        return false;
+        return Engine.Status.PLAY;
     }
 
     private Position target(Engine.Direction d) {

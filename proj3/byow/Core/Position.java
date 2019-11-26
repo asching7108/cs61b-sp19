@@ -15,4 +15,8 @@ public class Position {
         this.y = y;
     }
 
+    public int x() { return x; }
+
+    public int y() { return y; }
+
 }
