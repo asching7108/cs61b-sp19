@@ -112,8 +112,8 @@ public class World {
      * when the current tile is FLOOR and the tile to be added is WALL to
      * prevent overlapping.
      *
-     * @param p
-     * @param t
+     * @param p the position in the world to be added
+     * @param t the TETile to be added
      */
     private void addTile(Position p, TETile t) {
         if (!t.equals(Tileset.WALL) || !world[p.x][p.y].equals(Tileset.FLOOR)) {
@@ -121,6 +121,9 @@ public class World {
         }
     }
 
+    /**
+     * Creates player and treasure in different random rooms.
+     */
     private void createPlayerAndTreasure() {
         int roomIndex = RandomUtils.uniform(random, bsp.rooms().size());
         Room r = bsp.rooms().get(roomIndex);
@@ -133,12 +136,15 @@ public class World {
         treasure = new Position(r.xOffset() + r.width() / 2, r.yOffset() + r.height() / 2);
     }
 
-    public TETile[][] worldFrame() { return world; }
-
-    public Position getPlayer() { return player; }
-
-    public Position getTreasure() { return treasure; }
-
+    /**
+     * Moves the player to the adjacent position it's facing to and returns the game status:
+     * if the player encounters the treasure, the user wins;
+     * if the player encounters its previous track, the user loses;
+     * otherwise the game continues.
+     *
+     * @param d the direction of the player
+     * @return the game status
+     */
     public Engine.Status movePlayer(Engine.Direction d) {
         Position target = target(d);
         TETile t = world[target.x][target.y];
@@ -156,6 +162,12 @@ public class World {
         return Engine.Status.PLAY;
     }
 
+    /**
+     * Returns the target position based on the player's current position and direction.
+     *
+     * @param d the direction of the player
+     * @return the target position
+     */
     private Position target(Engine.Direction d) {
         switch(d) {
             case UP: return new Position(player.x, player.y + 1);
@@ -165,4 +177,26 @@ public class World {
             default: return player;
         }
     }
+
+    /**
+     * Returns the 2d array of TETiles.
+     *
+     * @return the 2d array of TETiles.
+     */
+    public TETile[][] worldFrame() { return world; }
+
+    /**
+     * Returns the position of the player.
+     *
+     * @return the position of the player.
+     */
+    public Position getPlayer() { return player; }
+
+    /**
+     * Returns the position of the treasure.
+     *
+     * @return the position of the treasure.
+     */
+    public Position getTreasure() { return treasure; }
+
 }

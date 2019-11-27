@@ -102,6 +102,16 @@ public class TERenderer {
         //StdDraw.show();
     }
 
+    /**
+     * Similar to renderFrame function, excepts only displays the treasure, and the cross area
+     * of where the player stands with a width of 3.
+     *
+     * @param world the 2D TETile[][] array to render
+     * @param player the position of the player
+     * @param treasure the position of the treasure
+     *
+     * Added by Hsingyi Lin 11/25/2019.
+     */
     public void renderRestrictedFrame(TETile[][] world, Position player, Position treasure) {
         int numXTiles = world.length;
         int numYTiles = world[0].length;

@@ -138,7 +138,12 @@ public class Engine {
         }
         // Initializes the world with the seed
         else if (status == Status.SEED && ch == 'S') {
-            seed = Long.parseLong(seedToBe.toString());
+            if (seedToBe.length() > 18) {
+                seed = Long.parseLong(seedToBe.substring(0, 18));
+            }
+            else {
+                seed = Long.parseLong(seedToBe.toString());
+            }
             status = Status.PLAY;
             inputs.append(ch);
             world = new World(seed, WIDTH, HEIGHT);
@@ -203,7 +208,7 @@ public class Engine {
         StdDraw.clear(Color.black);
         StdDraw.setPenColor(Color.white);
         StdDraw.setFont(TITLE_FONT);
-        StdDraw.text(midWidth, HEIGHT - 10, "CS61B: FINAL GAME");
+        StdDraw.text(midWidth, HEIGHT - 10, "TREASURE HUNT");
         StdDraw.setFont(SUBTITLE_FONT);
         StdDraw.text(midWidth, midHeight, "NEW GAME (N)");
         StdDraw.text(midWidth, midHeight - 2, "LOAD GAME (L)");
@@ -226,15 +231,14 @@ public class Engine {
         StdDraw.setFont(TITLE_FONT);
         StdDraw.text(midWidth, HEIGHT - 10, "NEW GAME");
         StdDraw.setFont(SUBTITLE_FONT);
-        StdDraw.text(midWidth, midHeight, "Enter any number within 18 digits.");
-        StdDraw.text(midWidth, midHeight - 2, "Then press \"S\".");
+        StdDraw.text(midWidth, midHeight, "Enter any number and then press \"S\".");
         StdDraw.setPenColor(Color.yellow);
-        StdDraw.text(midWidth, midHeight - 4, input);
+        StdDraw.text(midWidth, midHeight - 2, input);
         StdDraw.show();
     }
 
     /**
-     * Draws the game with 5 seconds of full map view.
+     * Draws the game with {@code COUNTDOWN} seconds of full map view.
      */
     private void drawNewWorld() {
         TETile[][] worldFrame = world.worldFrame();
